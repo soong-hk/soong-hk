@@ -34,6 +34,7 @@ export default function HomePage() {
     setQuery(searchQuery);
     setSearchLabel(label || searchQuery);
     trackSearch(searchQuery);
+    fetch("/api/log-search", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ query: searchQuery, searchType: "keyword" }) }).catch(() => {});
     try {
       const res = await fetch(`/api/search?q=${encodeURIComponent(searchQuery)}`);
       const data = await res.json();
@@ -52,6 +53,7 @@ export default function HomePage() {
     setSearchLabel(tag.emoji + " " + tag.label);
     setQuery(tag.label);
     trackSearch(tag.label);
+    fetch("/api/log-search", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ query: tag.label, searchType: "scenario" }) }).catch(() => {});
     try {
       const batchParam = tag.keywords.join(",");
       const res = await fetch(`/api/search?batch=${encodeURIComponent(batchParam)}`);
