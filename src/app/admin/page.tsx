@@ -1,7 +1,8 @@
 "use client";
 
+export const dynamic = "force-dynamic";
+
 import { useEffect, useState } from "react";
-import { supabase } from "@/lib/supabase";
 
 interface VoteStat { video_id: string; video_title: string; channel_title: string; up: number; down: number; score: number; }
 interface SearchStat { query: string; count: number; }
@@ -20,31 +21,16 @@ export default function AdminPage() {
 
   const fetchData = async () => {
     setLoading(true);
-
-    // 影片評分統計
-    const { data: votes } = await supabase.from("video_votes").select("*");
-    if (votes) {
-      setTotalVotes(votes.length);
-      const map: Record<string, VoteStat> = {};
-      votes.forEach((v) => {
-        if (!map[v.video_id]) map[v.video_id] = { video_id: v.video_id, video_title: v.video_title || v.video_id, channel_title: v.channel_title || "-", up: 0, down: 0, score: 0 };
-        if (v.vote_type === "up") map[v.video_id].up++;
-        else map[v.video_id].down++;
-      });
-      const stats = Object.values(map).map((v) => ({ ...v, score: v.up - v.down })).sort((a, b) => b.score - a.score);
-      setVoteStats(stats);
+    try {
+      const res = await fetch("/api/admin-data");
+      const data = await res.json();
+      setVoteStats(data.voteStats ?? []);
+      setSearchStats(data.searchStats ?? []);
+      setTotalVotes(data.totalVotes ?? 0);
+      setTotalSearches(data.totalSearches ?? 0);
+    } catch (e) {
+      console.error(e);
     }
-
-    // 搜尋關鍵字統計
-    const { data: searches } = await supabase.from("search_logs").select("*");
-    if (searches) {
-      setTotalSearches(searches.length);
-      const map: Record<string, number> = {};
-      searches.forEach((s) => { map[s.query] = (map[s.query] || 0) + 1; });
-      const stats = Object.entries(map).map(([query, count]) => ({ query, count })).sort((a, b) => b.count - a.count).slice(0, 20);
-      setSearchStats(stats);
-    }
-
     setLoading(false);
   };
 
@@ -72,13 +58,12 @@ export default function AdminPage() {
           <button onClick={fetchData} className="rounded-xl px-4 py-2 text-sm font-medium text-white" style={{ background: "var(--color-sage)" }}>🔄 刷新</button>
         </div>
 
-        {/* KPI 卡片 */}
         <div className="mb-6 grid grid-cols-2 gap-4 sm:grid-cols-4">
           {[
             { label: "總搜尋次數", value: totalSearches, emoji: "🔍" },
             { label: "總評分次數", value: totalVotes, emoji: "👍" },
             { label: "已評分影片", value: voteStats.length, emoji: "🎬" },
-            { label: "搜尋關鍵字", value: searchStats.length, emoji: "📝" },
+            { label: "熱門關鍵字", value: searchStats.length, emoji: "📝" },
           ].map((kpi) => (
             <div key={kpi.label} className="rounded-2xl p-4 text-center" style={{ background: "white", border: "1px solid var(--color-border)" }}>
               <div className="text-2xl mb-1">{kpi.emoji}</div>
@@ -88,7 +73,6 @@ export default function AdminPage() {
           ))}
         </div>
 
-        {/* Tab 切換 */}
         <div className="mb-4 flex gap-2">
           {(["votes", "searches"] as const).map((t) => (
             <button key={t} onClick={() => setTab(t)} className="rounded-xl px-4 py-2 text-sm font-medium transition-all" style={{ background: tab === t ? "var(--color-sage)" : "white", color: tab === t ? "white" : "var(--color-text)", border: "1px solid var(--color-border)" }}>
@@ -97,7 +81,6 @@ export default function AdminPage() {
           ))}
         </div>
 
-        {/* 影片評分表 */}
         {tab === "votes" && (
           <div className="rounded-2xl overflow-hidden" style={{ background: "white", border: "1px solid var(--color-border)" }}>
             <div className="px-5 py-4 border-b" style={{ borderColor: "var(--color-border)" }}>
@@ -119,7 +102,7 @@ export default function AdminPage() {
                   {loading ? (
                     <tr><td colSpan={6} className="py-8 text-center" style={{ color: "var(--color-text-muted)" }}>載入中...</td></tr>
                   ) : voteStats.length === 0 ? (
-                    <tr><td colSpan={6} className="py-8 text-center" style={{ color: "var(--color-text-muted)" }}>暫無數據</td></tr>
+                    <tr><td colSpan={6} className="py-8 text-center" style={{ color: "var(--color-text-muted)" }}>暫無數據 — 去主頁點幾個👍👎先！</td></tr>
                   ) : voteStats.map((v, i) => (
                     <tr key={v.video_id} style={{ borderTop: "1px solid var(--color-border)" }}>
                       <td className="px-4 py-3 max-w-xs">
@@ -147,7 +130,6 @@ export default function AdminPage() {
           </div>
         )}
 
-        {/* 搜尋關鍵字表 */}
         {tab === "searches" && (
           <div className="rounded-2xl overflow-hidden" style={{ background: "white", border: "1px solid var(--color-border)" }}>
             <div className="px-5 py-4 border-b" style={{ borderColor: "var(--color-border)" }}>
@@ -155,7 +137,7 @@ export default function AdminPage() {
             </div>
             <div className="p-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
               {loading ? <p className="text-sm" style={{ color: "var(--color-text-muted)" }}>載入中...</p>
-              : searchStats.length === 0 ? <p className="text-sm" style={{ color: "var(--color-text-muted)" }}>暫無數據</p>
+              : searchStats.length === 0 ? <p className="text-sm" style={{ color: "var(--color-text-muted)" }}>暫無數據 — 去主頁搜尋幾個關鍵字先！</p>
               : searchStats.map((s, i) => (
                 <div key={s.query} className="flex items-center justify-between rounded-xl px-4 py-3" style={{ background: "var(--color-warm)", border: "1px solid var(--color-border)" }}>
                   <div className="flex items-center gap-3">

@@ -38,7 +38,14 @@ export default function HomePage() {
     try {
       const res = await fetch(`/api/search?q=${encodeURIComponent(searchQuery)}`);
       const data = await res.json();
-      setResults(data.videos ?? []);
+      const videos = data.videos ?? [];
+      if (videos.length === 0 && !data.error) {
+        const retry = await fetch(`/api/search?q=${encodeURIComponent(searchQuery)}`);
+        const retryData = await retry.json();
+        setResults(retryData.videos ?? []);
+      } else {
+        setResults(videos);
+      }
     } catch (e) {
       console.error(e);
       setResults([]);
@@ -58,7 +65,14 @@ export default function HomePage() {
       const batchParam = tag.keywords.join(",");
       const res = await fetch(`/api/search?batch=${encodeURIComponent(batchParam)}`);
       const data = await res.json();
-      setResults(data.videos ?? []);
+      const videos = data.videos ?? [];
+      if (videos.length === 0 && !data.error) {
+        const retry = await fetch(`/api/search?q=${encodeURIComponent(searchQuery)}`);
+        const retryData = await retry.json();
+        setResults(retryData.videos ?? []);
+      } else {
+        setResults(videos);
+      }
     } catch (e) {
       console.error(e);
       setResults([]);
