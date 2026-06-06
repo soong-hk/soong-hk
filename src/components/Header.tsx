@@ -11,7 +11,7 @@ export default function Header() {
             <span className="block text-xs leading-none tracking-widest" style={{ color: "var(--color-gold)" }}>soong.hk</span>
           </div>
         </a>
-        <p className="hidden sm:block text-xs italic" style={{ color: "var(--color-text-muted)" }}>在家自救郁一郁，痛處自然鬆一鬆</p>
+        
       </div>
     </header>
   );

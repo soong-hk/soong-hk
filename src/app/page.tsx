@@ -154,12 +154,12 @@ export default function HomePage() {
             <div className="relative mx-auto max-w-lg" style={{ zIndex: 1 }}>
               <div className="mb-3 flex justify-center">
                 <span className="inline-block rounded-full px-3 py-1 text-xs font-medium" style={{ background: "rgba(87,115,113,0.08)", color: "var(--color-sage)", border: "1px solid rgba(87,115,113,0.2)" }}>
-                  🤖 AI 智能篩選 · 居家自助舒緩 · 內容僅供參考
+                  🤖 AI 智能篩選 · 在家自救郁一郁 · 痛處自然鬆一鬆
                 </span>
               </div>
               <div className="flex justify-center mb-3"><Image src="/soongHK_Logo.png" alt="鬆啲" width={160} height={107} style={{ filter: "invert(35%) sepia(25%) saturate(500%) hue-rotate(130deg) brightness(55%)", opacity: 0.85 }} /></div>
               <h1 className="mb-2 text-5xl font-bold" style={{ fontFamily: "var(--font-display)", color: "var(--color-text)", lineHeight: 1.1 }}>鬆啲</h1>
-              <p className="mb-6 text-sm" style={{ color: "var(--color-text-muted)" }}>輸入你的不適部位，即時找到舒緩動作</p>
+              <p className="mb-6 text-sm" style={{ color: "var(--color-text-muted)" }}>一鍵即時搵到舒緩動作</p>
 
               {/* 情境 + 搜尋一體區塊 */}
               <div className="rounded-2xl p-4 mb-4 text-center" style={{ background: "rgba(190,210,213,0.15)", border: "1px solid rgba(190,210,213,0.4)" }}>
