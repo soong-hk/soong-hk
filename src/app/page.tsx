@@ -18,6 +18,14 @@ function trackSearch(query: string) {
   }
 }
 
+function logSearch(query: string, resultCount: number, searchType: string) {
+  fetch("/api/log-search", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ query, resultCount, searchType }),
+  }).catch(() => {});
+}
+
 export default function HomePage() {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<VideoItem[]>([]);
@@ -34,18 +42,19 @@ export default function HomePage() {
     setQuery(searchQuery);
     setSearchLabel(label || searchQuery);
     trackSearch(searchQuery);
-    fetch("/api/log-search", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ query: searchQuery, searchType: "keyword" }) }).catch(() => {});
     try {
-      const res = await fetch(`/api/search?q=${encodeURIComponent(searchQuery)}`);
+      const url = `/api/search?q=${encodeURIComponent(searchQuery)}`;
+      const res = await fetch(url);
       const data = await res.json();
-      const videos = data.videos ?? [];
+      let videos = data.videos ?? [];
       if (videos.length === 0 && !data.error) {
-        const retry = await fetch(`/api/search?q=${encodeURIComponent(searchQuery)}`);
+        await new Promise((r) => setTimeout(r, 800));
+        const retry = await fetch(url);
         const retryData = await retry.json();
-        setResults(retryData.videos ?? []);
-      } else {
-        setResults(videos);
+        videos = retryData.videos ?? [];
       }
+      setResults(videos);
+      logSearch(searchQuery, videos.length, "keyword");
     } catch (e) {
       console.error(e);
       setResults([]);
@@ -60,19 +69,20 @@ export default function HomePage() {
     setSearchLabel(tag.emoji + " " + tag.label);
     setQuery(tag.label);
     trackSearch(tag.label);
-    fetch("/api/log-search", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ query: tag.label, searchType: "scenario" }) }).catch(() => {});
     try {
       const batchParam = tag.keywords.join(",");
-      const res = await fetch(`/api/search?batch=${encodeURIComponent(batchParam)}`);
+      const url = `/api/search?batch=${encodeURIComponent(batchParam)}`;
+      const res = await fetch(url);
       const data = await res.json();
-      const videos = data.videos ?? [];
+      let videos = data.videos ?? [];
       if (videos.length === 0 && !data.error) {
-        const retry = await fetch(`/api/search?q=${encodeURIComponent(searchQuery)}`);
+        await new Promise((r) => setTimeout(r, 800));
+        const retry = await fetch(url);
         const retryData = await retry.json();
-        setResults(retryData.videos ?? []);
-      } else {
-        setResults(videos);
+        videos = retryData.videos ?? [];
       }
+      setResults(videos);
+      logSearch(tag.label, videos.length, "scenario");
     } catch (e) {
       console.error(e);
       setResults([]);
