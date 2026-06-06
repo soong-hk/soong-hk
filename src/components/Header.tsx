@@ -8,7 +8,6 @@ export default function Header() {
           <Image src="/SoongHK_Left_Small_Logo.png" alt="鬆啲" width={24} height={24} style={{ objectFit: "contain" }} />
           <div>
             <span className="block text-xl font-bold leading-tight" style={{ fontFamily: "var(--font-display)", color: "var(--color-sage)" }}>鬆啲</span>
-            <span className="block text-xs leading-none tracking-widest" style={{ color: "var(--color-gold)" }}>soong.hk</span>
           </div>
         </a>
         
