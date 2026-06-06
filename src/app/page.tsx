@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import Image from "next/image";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
@@ -36,6 +36,16 @@ export default function HomePage() {
   const [activeScenario, setActiveScenario] = useState<string | null>(null);
   const [searchLabel, setSearchLabel] = useState("");
   const [popupVideo, setPopupVideo] = useState<VideoItem | null>(null);
+  const [scrollY, setScrollY] = useState(0);
+
+  useEffect(() => {
+    let raf: number;
+    const onScroll = () => {
+      raf = requestAnimationFrame(() => setScrollY(window.scrollY));
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => { window.removeEventListener("scroll", onScroll); cancelAnimationFrame(raf); };
+  }, []);
 
   const handleSearch = useCallback(async (searchQuery: string, label?: string) => {
     if (!searchQuery.trim()) return;
@@ -119,42 +129,27 @@ export default function HomePage() {
             className="relative text-center px-4 pt-10 pb-10 overflow-hidden"
             style={{ background: "var(--color-cream)" }}
           >
-            {/* 右上角實色半圓 */}
-            <div
-              className="pointer-events-none absolute top-0 right-0"
-              style={{
-                width: 110,
-                height: 110,
-                background: "#BED2D5",
-                borderBottomLeftRadius: "110px",
-                zIndex: 0,
-              }}
-            />
+                                    
 
-
-
-            {/* 左下實色花形 */}
-            <div
-              className="pointer-events-none absolute"
-              style={{ bottom: 16, left: -16, zIndex: 0 }}
-            >
-              <svg width="72" height="72" viewBox="-36 -36 72 72">
-                {[0, 72, 144, 216, 288].map((r) => (
-                  <path
-                    key={r}
-                    d="M0,-22 C6,-22 17,-14 17,0 C17,14 6,22 0,22 C-6,22 -17,14 -17,0 C-17,-14 -6,-22 0,-22Z"
-                    fill="#E6B079"
-                    transform={`rotate(${r})`}
-                  />
-                ))}
-              </svg>
+            {/* 左下橙色花形 */}
+            <div className="pointer-events-none absolute" style={{ bottom: 24, left: -10, zIndex: 0, transform: `rotate(${scrollY * 0.08}deg)` }}>
+              <svg width="110" height="110" viewBox="0 0 100 100"><g transform="translate(50,50)">{[0,72,144,216,288].map((r) => (<ellipse key={r} cx="0" cy="-28" rx="16" ry="22" fill="#E6B079" transform={`rotate(${r})`} />))}<circle cx="0" cy="0" r="18" fill="#E6B079" /></g></svg>
             </div>
 
-            {/* 小半透明圓右中 */}
-            <div
-              className="pointer-events-none absolute"
-              style={{ top: "45%", right: 12, width: 40, height: 40, borderRadius: "50%", background: "#BCA446", opacity: 0.18, zIndex: 0 }}
-            />
+            {/* 右中橄欖色花形 */}
+            <div className="pointer-events-none absolute" style={{ top: "40%", right: -8, zIndex: 0, opacity: 0.85, transform: `rotate(${scrollY * -0.06}deg)` }}>
+              <svg width="80" height="80" viewBox="0 0 100 100"><g transform="translate(50,50)">{[0,72,144,216,288].map((r) => (<ellipse key={r} cx="0" cy="-28" rx="16" ry="22" fill="#BCA446" transform={`rotate(${r})`} />))}<circle cx="0" cy="0" r="18" fill="#BCA446" /></g></svg>
+            </div>
+
+            {/* 左上小teal花形 */}
+            <div className="pointer-events-none absolute" style={{ top: "20%", left: 4, zIndex: 0, opacity: 0.55, transform: `rotate(${scrollY * 0.12}deg)` }}>
+              <svg width="55" height="55" viewBox="0 0 100 100"><g transform="translate(50,50)">{[0,72,144,216,288].map((r) => (<ellipse key={r} cx="0" cy="-28" rx="16" ry="22" fill="#577371" transform={`rotate(${r})`} />))}<circle cx="0" cy="0" r="18" fill="#577371" /></g></svg>
+            </div>
+
+            {/* 右下粉紅花形 */}
+            <div className="pointer-events-none absolute" style={{ bottom: 20, right: 6, zIndex: 0, transform: `rotate(${scrollY * -0.10}deg)` }}>
+              <svg width="88" height="88" viewBox="0 0 100 100"><g transform="translate(50,50)">{[0,72,144,216,288].map((r) => (<ellipse key={r} cx="0" cy="-28" rx="16" ry="22" fill="#EFD6D5" transform={`rotate(${r})`} />))}<circle cx="0" cy="0" r="18" fill="#EFD6D5" /></g></svg>
+            </div>
 
             <div className="relative mx-auto max-w-lg" style={{ zIndex: 1 }}>
               <div className="mb-3 flex justify-center">
@@ -167,11 +162,11 @@ export default function HomePage() {
               <p className="mb-6 text-sm" style={{ color: "var(--color-text-muted)" }}>輸入你的不適部位，即時找到舒緩動作</p>
 
               {/* 情境 + 搜尋一體區塊 */}
-              <div className="rounded-2xl p-4 mb-4 text-left" style={{ background: "rgba(190,210,213,0.15)", border: "1px solid rgba(190,210,213,0.4)" }}>
+              <div className="rounded-2xl p-4 mb-4 text-center" style={{ background: "rgba(190,210,213,0.15)", border: "1px solid rgba(190,210,213,0.4)" }}>
                 <p className="mb-3 text-xs font-medium" style={{ color: "var(--color-sage)" }}>
                   🙋 今日做咗咩？幫你搵最啱嘅舒緩動作
                 </p>
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-wrap gap-2 justify-center">
                   {SCENARIO_TAGS.map((tag) => (
                     <button
                       key={tag.label}
@@ -212,30 +207,21 @@ export default function HomePage() {
                     </button>
                   </div>
                 </form>
+                {/* 熱門快捷鍵 */}
+                <div className="flex flex-wrap gap-2 mt-3 justify-center">
+                  {QUICK_TAGS.map((tag) => (
+                    <button key={tag.query} onClick={() => handleTagClick(tag)} className="rounded-full px-3 py-1.5 text-xs font-medium transition-all" style={{ background: activeTag === tag.query ? "var(--color-sage)" : "rgba(255,255,255,0.8)", color: activeTag === tag.query ? "white" : "var(--color-sage)", border: `1px solid ${activeTag === tag.query ? "var(--color-sage)" : "rgba(87,115,113,0.25)"}` }}>
+                      {tag.emoji} {tag.label}
+                    </button>
+                  ))}
+                </div>
               </div>
 
-              {/* 熱門快捷鍵 */}
-              <div className="flex flex-wrap justify-center gap-2">
-                {QUICK_TAGS.map((tag) => (
-                  <button key={tag.query} onClick={() => handleTagClick(tag)} className="rounded-full px-3 py-1.5 text-xs font-medium transition-all" style={{ background: activeTag === tag.query ? "var(--color-sage)" : "rgba(190,210,213,0.2)", color: activeTag === tag.query ? "white" : "var(--color-sage)", border: `1px solid ${activeTag === tag.query ? "var(--color-sage)" : "rgba(87,115,113,0.18)"}` }}>
-                    {tag.emoji} {tag.label}
-                  </button>
-                ))}
-              </div>
+
             </div>
           </section>
 
-          {/* ── 使用須知：只用上波浪，下面直接接 cream ── */}
-          <svg viewBox="0 0 1440 56" preserveAspectRatio="none" style={{ display: "block", width: "100%", height: 56, background: "var(--color-cream)" }}>
-            <path d="M0 56 Q180 16 360 36 Q540 56 720 24 Q900 4 1080 32 Q1260 56 1440 20 L1440 56Z" fill="#BED2D5"/>
-          </svg>
-          <div style={{ background: "#BED2D5", padding: "0 20px 24px" }}>
-            <p style={{ fontSize: 11, lineHeight: 1.8, color: "#2d4442" }}>
-              <strong style={{ color: "#1e3330" }}>⚠️ 使用須知：</strong>本站專為「在家突然不適、希望即時找到一些動作稍作舒緩」而設——並非取代就醫，而是讓您在求診前或等候期間能夠有所依循。影片由 AI 自動篩選，系統可能存在誤差，未能保證每條影片均來自認可專業人士，請自行判斷內容是否適合您的狀況。
-            </p>
-          </div>
-          {/* 使用須知下方直接轉回 cream，無下波浪 */}
-          <div style={{ height: 32, background: "var(--color-cream)", marginTop: -1 }} />
+
 
           {/* 廣告位 */}
           {hasSearched && (
@@ -286,19 +272,7 @@ export default function HomePage() {
                 <p className="text-sm" style={{ color: "var(--color-text-muted)" }}>試試其他關鍵字，或點擊上方的情境標籤</p>
               </div>
             )}
-            {!hasSearched && (
-              <div className="py-4 text-center">
-                <p className="mb-4 text-sm font-medium" style={{ color: "var(--color-text-muted)" }}>熱門搜尋</p>
-                <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-                  {QUICK_TAGS.map((tag) => (
-                    <button key={tag.query} onClick={() => handleTagClick(tag)} className="rounded-xl p-4 text-left transition-all hover:shadow-md" style={{ background: "white", border: "1px solid var(--color-border)" }}>
-                      <div className="mb-1 text-2xl">{tag.emoji}</div>
-                      <div className="text-sm font-medium" style={{ color: "var(--color-text)" }}>{tag.label}</div>
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
+
           </section>
 
           <AddToHomeScreen />
